@@ -6,24 +6,31 @@ import org.compiler.exp01.common.TokenizerException
 
 class TokenizerImpl : Tokenizer {
 	
+	companion object {
+		val separatorWordList = listOf("{", "}", "(", ")", ";", ",")
+		val reservedWordList = listOf("if", "else", "while", "do", "for", "int")
+		val operatorWordList = listOf("+", "-", "*", "/", "**", "=", "==", "!=", ">", "<", ">=", "<=", "|", "&")
+		const val BLANK_CHAR = " "
+		const val DIGIT_TYPE_CODE = 1
+		const val IDENTIFIER_TYPE_CODE = 2
+		const val START_AUTO_GENERATOR_TYPE_CODE = 30
+	}
+	
 	val wordTypeCodeMap: Map<String, Int>
 	val codeExplanationMap: Map<Int, String>
-	val separatorWordList = listOf("{", "}", "(", ")", ";", ",")
-	val reservedWordList = listOf("if", "else", "while", "do", "for", "int")
-	val operatorWordList = listOf("+", "-", "*", "/", "**", "=", "==", "!=", ">", "<", ">=", "<=", "|", "&")
-	val digitTypeCode = 1
-	val identifierTypeCode = 2
-	val startAutoGenerateTypeCode = 30
+	
 	
 	init {
 		wordTypeCodeMap = HashMap()
-		var code = startAutoGenerateTypeCode
+		var code = START_AUTO_GENERATOR_TYPE_CODE
 		separatorWordList.forEach { wordTypeCodeMap[it] = code++ }
 		reservedWordList.forEach { wordTypeCodeMap[it] = code++ }
 		operatorWordList.forEach { wordTypeCodeMap[it] = code++ }
 		
 		codeExplanationMap = HashMap()
 		wordTypeCodeMap.forEach { (k, v) -> codeExplanationMap[v] = k }
+		codeExplanationMap[IDENTIFIER_TYPE_CODE] = "_ID_"
+		codeExplanationMap[DIGIT_TYPE_CODE] = "_CONST_"
 	}
 	
 	override fun parseToken(text: String): MutableList<Token> {
@@ -36,10 +43,13 @@ class TokenizerImpl : Tokenizer {
 		while (cur < text.length) {
 			it = text[cur].toString()
 			when (it) {
-				" " -> {}
+				BLANK_CHAR -> {
+					cur++
+				}
 				
 				in separatorWordList -> {
 					tokens.add(Pair(getTypeCode(it), it))
+					cur++
 				}
 				
 				in operatorWordList -> {
@@ -48,7 +58,6 @@ class TokenizerImpl : Tokenizer {
 					}
 					tokens.add(Pair(getTypeCode(word), word))
 					cur = _cur
-					continue
 				}
 				
 				else -> {
@@ -59,21 +68,19 @@ class TokenizerImpl : Tokenizer {
 						throw TokenizerException("无法识别字符'${text[cur]}'，位于第${cur}个字符，文本为${text}")
 					}
 					
+					cur = _cur
 					when (word) {
 						in reservedWordList -> {
 							tokens.add(Pair(getTypeCode(word), word))
 						}
 						
 						else -> {
-							tokens.add(Pair(if (word.isDigit()) digitTypeCode else identifierTypeCode, word))
+							tokens.add(Pair(if (word.isDigit()) DIGIT_TYPE_CODE else IDENTIFIER_TYPE_CODE, word))
 						}
 					}
-					
-					cur = _cur
-					continue
 				}
 			}
-			cur++
+			
 		}
 		
 		return tokens
@@ -100,19 +107,20 @@ class TokenizerImpl : Tokenizer {
 	}
 	
 	fun getCodeExplanation(code: Int): String {
-		var flag = codeExplanationMap[code]
-		if (flag == null) {
-			flag = if (code == identifierTypeCode) "_ID_" else "_CONST_"
-		}
-		
-		return flag
+		return codeExplanationMap[code]!!
 	}
 	
 	val digitRegex = Regex("^([-+])?\\d+(\\.\\d+)?\$")
 	
-	// -10.5
 	fun String.isDigit(): Boolean {
 		return this.matches(digitRegex)
+	}
+	
+	fun isIdentifierChar(c: Char): Boolean {
+		return c in 'a'..'z' ||
+				c in 'A'..'Z' ||
+				c in '0'..'9' ||
+				c == '_'
 	}
 	
 }
