@@ -33,7 +33,7 @@ class TokenizerImpl : Tokenizer {
 		codeExplanationMap[DIGIT_TYPE_CODE] = "_CONST_"
 	}
 	
-	override fun parseToken(text: String): MutableList<Token> {
+	override fun parseToken(text: String, throwExRatherPrintWhenError: Boolean): MutableList<Token> {
 		// main() { int a,b; a = 10; b = a + 20; }
 		val tokens = ArrayList<Token>()
 		
@@ -65,7 +65,14 @@ class TokenizerImpl : Tokenizer {
 					val (word, _cur) = walkOneWord(text, cur, ::isIdentifierChar)
 					
 					if (cur == _cur) {
-						throw TokenizerException("无法识别字符'${text[cur]}'，位于第${cur}个字符，文本为${text}")
+						val errorMsg = "无法识别字符'${text[cur]}'，位于第${cur}个字符，文本为${text}"
+						if (throwExRatherPrintWhenError) {
+							throw TokenizerException(errorMsg)
+						} else {
+							println(errorMsg)
+							cur++
+							continue
+						}
 					}
 					
 					cur = _cur
