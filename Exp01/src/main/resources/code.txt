@@ -1,8 +1,13 @@
-int main() {
-    int a,b; /**/
-    a = 10; //
-    b = a + 20;
-    int c = b ** 2;
-    int d = c | b;
-    // char e = "/**/ // ";
+
+main()
+{
+   int a, b,sum;//define a and b
+   a=10;
+   b=20;
+   /*compute the sum of
+    a and b.
+   */
+   sum=a+b;
+
+   int c = b ** 2; int d = c | b; /* char e = "/**/ // " */;
 }

@@ -2,7 +2,7 @@ package org.compiler.exp01.api.impl
 
 import org.compiler.exp01.api.Token
 import org.compiler.exp01.api.Tokenizer
-import org.compiler.exp01.common.TokenizerException
+import org.compiler.exp01.common.CompileException
 
 class TokenizerImpl : Tokenizer {
 	
@@ -67,7 +67,7 @@ class TokenizerImpl : Tokenizer {
 					if (cur == _cur) {
 						val errorMsg = "无法识别字符'${text[cur]}'，位于第${cur}个字符，文本为${text}"
 						if (throwExRatherPrintWhenError) {
-							throw TokenizerException(errorMsg)
+							throw CompileException(errorMsg)
 						} else {
 							println(errorMsg)
 							cur++

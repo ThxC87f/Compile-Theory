@@ -24,7 +24,7 @@ open class CompilePreProcessor {
 			when (it) {
 				// 是无效字符
 				in unusedCharList -> {
-					if (list.last != ' ') {
+					if (list.peekLast() != null && list.last != ' ') {
 						list.addLast(' ')
 					}
 					continue
@@ -77,7 +77,7 @@ open class CompilePreProcessor {
 			}
 		}
 		
-		throw TokenizerException("多行注释没有闭合")
+		throw CompileException("多行注释没有闭合")
 	}
 	
 	
