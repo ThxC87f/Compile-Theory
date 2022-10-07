@@ -43,15 +43,16 @@ class TokenizerImpl : Tokenizer {
 		while (cur < text.length) {
 			it = text[cur].toString()
 			when (it) {
+				// [空格]
 				BLANK_CHAR -> {
 					cur++
 				}
-				
+				// [分隔符]
 				in separatorWordList -> {
 					tokens.add(Pair(getTypeCode(it), it))
 					cur++
 				}
-				
+				// [操作符]
 				in operatorWordList -> {
 					val (word, _cur) = walkOneWord(text, cur) {
 						it.toString() in operatorWordList
@@ -61,11 +62,13 @@ class TokenizerImpl : Tokenizer {
 				}
 				
 				else -> {
-					// [保留字]，[标识符]，[常数]，[操作符]
+					// [保留字]，[标识符]，[常数]，[非法字符]
 					val (word, _cur) = walkOneWord(text, cur, ::isIdentifierChar)
 					
 					if (cur == _cur) {
+						// [非法字符]
 						val errorMsg = "无法识别字符'${text[cur]}'，位于第${cur}个字符，文本为${text}"
+						// 决定异常处理策略
 						if (throwExRatherPrintWhenError) {
 							throw CompileException(errorMsg)
 						} else {
@@ -77,11 +80,13 @@ class TokenizerImpl : Tokenizer {
 					
 					cur = _cur
 					when (word) {
+						// [保留字]
 						in reservedWordList -> {
 							tokens.add(Pair(getTypeCode(word), word))
 						}
 						
 						else -> {
+							// [常量]或[标识符]
 							tokens.add(Pair(if (word.isDigit()) DIGIT_TYPE_CODE else IDENTIFIER_TYPE_CODE, word))
 						}
 					}
