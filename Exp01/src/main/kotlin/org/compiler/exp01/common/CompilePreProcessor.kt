@@ -64,9 +64,8 @@ open class CompilePreProcessor {
 							true
 						}
 						cur++
-						
-						if (cur >= text.length) {
-							throw CompileException("字符串引号\"没有闭合，上一个字符是[${text[cur - 1]}]")
+						checkBound(text, cur) {
+							"字符串引号\"没有闭合，上一个字符是[${text[cur - 1]}]"
 						}
 					}
 					
@@ -82,8 +81,8 @@ open class CompilePreProcessor {
 				else -> {
 					accept(it)
 					cur++
-					if (cur >= text.length) {
-						throw CompileException("字符串引号\"没有闭合：[${text.substring(begin, cur - 1)}]")
+					checkBound(text, cur) {
+						"字符串引号\"没有闭合：[${text.substring(begin, cur - 1)}]"
 					}
 				}
 			}
@@ -94,31 +93,53 @@ open class CompilePreProcessor {
 	}
 	
 	private fun walkComment(text: String, begin: Int): Int {
-		var cur = begin
-		val stopChar = if (text[++cur] == '/') '\n' else '*'
+		var cur = begin + 1
 		
-		@Suppress("ControlFlowWithEmptyBody")
-		while (cur < text.length && text[cur++] != stopChar) {
+		checkBound(text, cur) {
+			"非法注释"
 		}
 		
-		if (stopChar == '\n') {
-			return cur
-		}
-		
-		if (cur != text.length) {
-			var it = text[cur++]
-			while (it != '/' && cur < text.length) {
-				it = text[cur++]
-			}
-			
-			if (it == '/') {
+		when (text[cur++]) {
+			'/' -> {
+				// 单行注释
+				@Suppress("ControlFlowWithEmptyBody")
+				while (cur < text.length && text[cur++] != '\n') {
+				}
 				return cur
 			}
+			
+			'*' -> {
+				// 多行注释
+				var it: Char
+				var next: Char
+				while (cur < text.length) {
+					it = text[cur]
+					checkBound(text, ++cur) {
+						"多行注释未闭合"
+					}
+					next = text[cur]
+					if (it == '*' && next == '/') {
+						break
+					} else {
+						if (next != '*') {
+							cur++
+						}
+					}
+				}
+				return cur + 2
+			}
+			
+			else -> {
+				throw CompileException("非法注释")
+			}
 		}
-		
-		throw CompileException("多行注释没有闭合")
 	}
 	
 	
+	private fun checkBound(text: String, index: Int, errorMsg: () -> String) {
+		if (index >= text.length) {
+			throw CompileException(errorMsg())
+		}
+	}
 }
 
