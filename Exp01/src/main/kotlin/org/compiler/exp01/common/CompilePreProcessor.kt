@@ -17,46 +17,85 @@ open class CompilePreProcessor {
 		val list = LinkedList<Char>()
 		
 		var cur = 0
-		var inString = false
 		
 		while (cur < text.length) {
-			val it = text[cur++]
-			when (it) {
+			when (val it = text[cur]) {
 				// 是无效字符
 				in unusedCharList -> {
 					if (list.peekLast() != null && list.last != ' ') {
 						list.addLast(' ')
 					}
-					continue
 				}
 				// 是字符串引号
 				in stringQuotes -> {
-					inString = true
+					cur = walkString(text, cur) {
+						list.addLast(it)
+					}
+					continue
 				}
-				// 疑似注释
+				// 是注释
 				'/' -> {
-					if (!inString) {
-						// 确实是注释
-						cur = walkComment(text, cur)
-						continue
+					cur = walkComment(text, cur)
+					continue
+				}
+				
+				else -> {
+					list.addLast(it)
+				}
+			}
+			cur++
+		}
+		
+		return list.joinToString(separator = "")
+	}
+	
+	private fun walkString(text: String, begin: Int, accept: (Char) -> Unit): Int {
+		var cur = begin
+		accept(text[cur++]) // String的开始符["]
+		while (text[cur] != '"') {
+			when (val it = text[cur]) {
+				'\\' -> {
+					var lastCharIsBackslash = false
+					while (text[cur] == '\\') {
+						lastCharIsBackslash = if (lastCharIsBackslash) {
+							accept('\\')
+							false
+						} else {
+							true
+						}
+						cur++
+						
+						if (cur >= text.length) {
+							throw CompileException("字符串引号\"没有闭合，上一个字符是[${text[cur - 1]}]")
+						}
+					}
+					
+					if (lastCharIsBackslash) {
+						// "\\\t"
+						accept('\\')
+						accept(text[cur++])
+					}
+					
+					continue
+				}
+				
+				else -> {
+					accept(it)
+					cur++
+					if (cur >= text.length) {
+						throw CompileException("字符串引号\"没有闭合：[${text.substring(begin, cur - 1)}]")
 					}
 				}
 			}
-			
-			list.addLast(it)
 		}
 		
-		val builder = StringBuilder(list.size)
-		while (list.isNotEmpty()) {
-			builder.append(list.pollFirst())
-		}
-		
-		return builder.toString()
+		accept(text[cur]) // String的结束符["]
+		return ++cur
 	}
 	
-	fun walkComment(text: String, current: Int): Int {
-		var cur = current
-		val stopChar = if (text[cur++] == '/') '\n' else '*'
+	private fun walkComment(text: String, begin: Int): Int {
+		var cur = begin
+		val stopChar = if (text[++cur] == '/') '\n' else '*'
 		
 		@Suppress("ControlFlowWithEmptyBody")
 		while (cur < text.length && text[cur++] != stopChar) {

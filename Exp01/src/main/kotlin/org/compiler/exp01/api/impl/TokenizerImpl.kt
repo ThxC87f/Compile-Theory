@@ -122,7 +122,7 @@ class TokenizerImpl : Tokenizer {
 		return codeExplanationMap[code]!!
 	}
 	
-	val digitRegex = Regex("^([-+])?\\d+(\\.\\d+)?\$")
+	val digitRegex = Regex("^[-+]?\\d+(\\.\\d+)?\$")
 	
 	fun String.isDigit(): Boolean {
 		return this.matches(digitRegex)
