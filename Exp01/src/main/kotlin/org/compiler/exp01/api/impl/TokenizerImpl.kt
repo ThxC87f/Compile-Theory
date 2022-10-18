@@ -19,7 +19,6 @@ class TokenizerImpl : Tokenizer {
 	val wordTypeCodeMap: Map<String, Int>
 	val codeExplanationMap: Map<Int, String>
 	
-	
 	init {
 		wordTypeCodeMap = HashMap()
 		var code = START_AUTO_GENERATOR_TYPE_CODE
@@ -36,6 +35,9 @@ class TokenizerImpl : Tokenizer {
 	override fun parseToken(text: String, throwExRatherPrintWhenError: Boolean): MutableList<Token> {
 		// main() { int a,b; a = 10; b = a + 20; }
 		val tokens = ArrayList<Token>()
+		val errorHandler = if (throwExRatherPrintWhenError)
+			ThrowExceptionErrorHandler() else
+			PrintErrorHandler(10)
 		
 		var it: String
 		var cur = 0
@@ -68,15 +70,11 @@ class TokenizerImpl : Tokenizer {
 					if (cur == _cur) {
 						// [非法字符]
 						val errorMsg = "无法识别字符'${text[cur]}'，位于第${cur}个字符，文本为${text}"
-						// 决定异常处理策略
-						if (throwExRatherPrintWhenError) {
-							throw CompileException(errorMsg)
-						} else {
-							println(errorMsg)
-							cur++
-							continue
-						}
+						errorHandler.handleError(errorMsg)
+						cur++
+						continue
 					}
+					
 					
 					cur = _cur
 					when (word) {
@@ -135,5 +133,28 @@ class TokenizerImpl : Tokenizer {
 				c == '_'
 	}
 	
+	
+	interface ErrorHandler {
+		fun handleError(msg: String)
+	}
+	
+	class PrintErrorHandler(val errorCountLimit: Int) : ErrorHandler {
+		var errorCount = 0
+		
+		override fun handleError(msg: String) {
+			errorCount++
+			println(msg)
+			if (errorCount >= errorCountLimit) {
+				throw CompileException("词法分析错误过多，超出限制！程序异常终止")
+			}
+			
+		}
+	}
+	
+	class ThrowExceptionErrorHandler : ErrorHandler {
+		override fun handleError(msg: String) {
+			throw CompileException(msg)
+		}
+	}
 }
 
