@@ -1,14 +1,15 @@
-
-import org.compiler.exp01.api.impl.TokenizerImpl
+import org.compiler.exp01.api.impl.Exp1Tokenizer
 import org.compiler.exp01.common.CompilePreProcessor
+import org.compiler.exp01.common.TokenRegister
+import org.compiler.exp01.common.readText
 import org.junit.Assert
 import org.junit.Test
 
 class KotlinTest01 {
 	
-	val tokenizer = TokenizerImpl()
+	val tokenizer = Exp1Tokenizer()
 	val processor = CompilePreProcessor()
-	val code = ClassLoader.getSystemResource("code.txt").readText()
+	val code = readText("exp01.txt")
 	
 	@Test
 	fun test_StringIsDigit() {
@@ -53,10 +54,10 @@ class KotlinTest01 {
 	
 	@Test
 	fun test_GetTypeCode() {
-		println(tokenizer.getTypeCode("if"))
-		println(tokenizer.getTypeCode("+"))
-		println(tokenizer.getTypeCode(";"))
-		println(tokenizer.getTypeCode(">="))
+		println(TokenRegister.getTypeCode("if"))
+		println(TokenRegister.getTypeCode("+"))
+		println(TokenRegister.getTypeCode(";"))
+		println(TokenRegister.getTypeCode(">="))
 	}
 	
 	@Test
@@ -70,7 +71,7 @@ class KotlinTest01 {
 		// pretty print
 		printer("[Code]", "[Type]", "[Value]")
 		tokens.forEach {
-			printer(it.first.toString(), tokenizer.getCodeExplanation(it.first), it.second)
+			printer(it.code.toString(), TokenRegister.getCodeExplanation(it.code), it.value)
 		}
 	}
 	

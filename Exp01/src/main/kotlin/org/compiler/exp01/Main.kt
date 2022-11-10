@@ -1,16 +1,12 @@
 package org.compiler.exp01
 
-import org.compiler.exp01.api.impl.TokenizerImpl
-import org.compiler.exp01.common.CompilePreProcessor
+import org.compiler.exp01.api.impl.Exp1Tokenizer
+import org.compiler.exp01.common.readText
 
 fun main() {
-	val tokenizer = TokenizerImpl()
-	val preProcessor = CompilePreProcessor()
-	
+	val tokenizer = Exp1Tokenizer()
 	// 读取代码文本
-	var code = ClassLoader.getSystemResource("code.txt").readText()
-	// 预处理
-	code = preProcessor.preProcess(code)
+	val code = readText("exp01", preProcess = true)
 	// 将代码文本解析为Token列表
 	val tokenList = tokenizer.parseToken(code)
 	// 打印结果

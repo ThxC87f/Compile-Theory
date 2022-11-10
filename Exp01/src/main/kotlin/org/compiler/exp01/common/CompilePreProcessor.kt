@@ -33,10 +33,15 @@ open class CompilePreProcessor {
 					}
 					continue
 				}
-				// 是注释
+				// 可能是注释
 				'/' -> {
-					cur = walkComment(text, cur)
-					continue
+					val nextChar = text[cur + 1]
+					if (nextChar != '/' && nextChar != '*') {
+						list.addLast(it)
+					} else {
+						cur = walkComment(text, cur)
+						continue
+					}
 				}
 				
 				else -> {

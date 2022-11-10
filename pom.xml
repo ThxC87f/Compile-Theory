@@ -11,6 +11,7 @@
     <modules>
         <module>STUDY_COMPILE</module>
         <module>Exp01</module>
+        <module>Exp02</module>
     </modules>
 
     <packaging>pom</packaging>

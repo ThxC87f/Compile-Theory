@@ -3,35 +3,14 @@ package org.compiler.exp01.api.impl
 import org.compiler.exp01.api.Token
 import org.compiler.exp01.api.Tokenizer
 import org.compiler.exp01.common.CompileException
+import org.compiler.exp01.common.TokenRegister.Companion.BLANK_CHAR
+import org.compiler.exp01.common.TokenRegister.Companion.DIGIT_TYPE_CODE
+import org.compiler.exp01.common.TokenRegister.Companion.IDENTIFIER_TYPE_CODE
+import org.compiler.exp01.common.TokenRegister.Companion.operatorWordList
+import org.compiler.exp01.common.TokenRegister.Companion.reservedWordList
+import org.compiler.exp01.common.TokenRegister.Companion.separatorWordList
 
-class TokenizerImpl : Tokenizer {
-	
-	companion object {
-		val separatorWordList = listOf("{", "}", "(", ")", ";", ",")
-		val reservedWordList = listOf("if", "else", "while", "do", "for", "int")
-		val operatorWordList = listOf("+", "-", "*", "/", "**", "=", "==", "!=", ">", "<", ">=", "<=", "|", "&")
-		const val BLANK_CHAR = " "
-		const val DIGIT_TYPE_CODE = 1
-		const val IDENTIFIER_TYPE_CODE = 2
-		const val START_AUTO_GENERATOR_TYPE_CODE = 30
-	}
-	
-	val wordTypeCodeMap: Map<String, Int>
-	val codeExplanationMap: Map<Int, String>
-	
-	init {
-		wordTypeCodeMap = HashMap()
-		var code = START_AUTO_GENERATOR_TYPE_CODE
-		separatorWordList.forEach { wordTypeCodeMap[it] = code++ }
-		reservedWordList.forEach { wordTypeCodeMap[it] = code++ }
-		operatorWordList.forEach { wordTypeCodeMap[it] = code++ }
-		
-		codeExplanationMap = HashMap()
-		wordTypeCodeMap.forEach { (k, v) -> codeExplanationMap[v] = k }
-		codeExplanationMap[IDENTIFIER_TYPE_CODE] = "_ID_"
-		codeExplanationMap[DIGIT_TYPE_CODE] = "_CONST_"
-	}
-	
+class Exp1Tokenizer : Tokenizer {
 	override fun parseToken(text: String, throwExRatherPrintWhenError: Boolean): MutableList<Token> {
 		// main() { int a,b; a = 10; b = a + 20; }
 		val tokens = ArrayList<Token>()
@@ -51,7 +30,7 @@ class TokenizerImpl : Tokenizer {
 				}
 				// [分隔符]
 				in separatorWordList -> {
-					tokens.add(Pair(getTypeCode(it), it))
+					tokens.add(Token(it))
 					cur++
 				}
 				// [操作符]
@@ -59,7 +38,13 @@ class TokenizerImpl : Tokenizer {
 					val (word, _cur) = walkOneWord(text, cur) {
 						it.toString() in operatorWordList
 					}
-					tokens.add(Pair(getTypeCode(word), word))
+					if (word !in operatorWordList) {
+						word.forEach {
+							tokens.add(Token(it.toString()))
+						}
+					} else {
+						tokens.add(Token(word))
+					}
 					cur = _cur
 				}
 				
@@ -80,12 +65,12 @@ class TokenizerImpl : Tokenizer {
 					when (word) {
 						// [保留字]
 						in reservedWordList -> {
-							tokens.add(Pair(getTypeCode(word), word))
+							tokens.add(Token(word))
 						}
 						
 						else -> {
 							// [常量]或[标识符]
-							tokens.add(Pair(if (word.isDigit()) DIGIT_TYPE_CODE else IDENTIFIER_TYPE_CODE, word))
+							tokens.add(Token(word, if (word.isDigit()) DIGIT_TYPE_CODE else IDENTIFIER_TYPE_CODE))
 						}
 					}
 				}
@@ -112,13 +97,6 @@ class TokenizerImpl : Tokenizer {
 		return Pair(builder.toString(), cur)
 	}
 	
-	fun getTypeCode(word: String): Int {
-		return wordTypeCodeMap[word]!!
-	}
-	
-	fun getCodeExplanation(code: Int): String {
-		return codeExplanationMap[code]!!
-	}
 	
 	val digitRegex = Regex("^[-+]?\\d+(\\.\\d+)?\$")
 	
@@ -127,9 +105,9 @@ class TokenizerImpl : Tokenizer {
 	}
 	
 	fun isIdentifierChar(c: Char): Boolean {
-		return c in 'a'..'z' ||
-				c in 'A'..'Z' ||
-				c in '0'..'9' ||
+		return c in 'a' .. 'z' ||
+				c in 'A' .. 'Z' ||
+				c in '0' .. '9' ||
 				c == '_'
 	}
 	
