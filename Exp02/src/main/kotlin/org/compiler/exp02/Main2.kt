@@ -9,7 +9,7 @@ fun main() {
 	val tokenizer = Exp1Tokenizer()
 	val parser = Exp2Parser()
 	val tokens = tokenizer.parseToken(text)
-	println(text)
-	println(tokens)
-	println(parser.judgeText(tokens))
+	println("预处理后的源代码：$text")
+	println("使用Exp1的Tokenizer解析得到的token列表：$tokens")
+	println("是否满足实验二所期望的文法：${parser.judgeText(tokens)}")
 }

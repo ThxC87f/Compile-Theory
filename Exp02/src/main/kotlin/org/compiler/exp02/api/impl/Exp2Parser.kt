@@ -22,7 +22,7 @@ class Exp2Parser : RecursiveDescentParser {
 		return RecursiveDescentProcessor(tokens).makeSense()
 	}
 	
-	@Suppress("FunctionName")
+	@Suppress("FunctionName", "NOTHING_TO_INLINE")
 	class RecursiveDescentProcessor(val tokens: List<Token>) {
 		var cur: Int = 0
 		
@@ -93,7 +93,7 @@ class Exp2Parser : RecursiveDescentParser {
 		}
 		
 		fun F(lang: Array<String> = arrayOf("F -> ", "(E)", "id", "num")) {
-			when (nextToken()) {
+			when (val it = nextToken()) {
 				TOKEN_L_PAR -> {
 					tipLang(lang, 1)
 					E()
@@ -112,7 +112,16 @@ class Exp2Parser : RecursiveDescentParser {
 					tipLang(lang, 3)
 					return
 				}
+				
+				else -> {
+					UnsatisfiedTokenException(it, lang)
+				}
 			}
+		}
+		
+		private fun UnsatisfiedTokenException(it: Token, lang: Array<String>) {
+			val tip = lang.filterIndexed { i, _ -> i > 0 }.toString()
+			throw CompileException("分析失败，当前[${it}]不满足 ${lang[0]}${tip}之中的任意一个")
 		}
 		
 		fun makeSense(): Boolean {
@@ -127,28 +136,28 @@ class Exp2Parser : RecursiveDescentParser {
 			return isMakeSense
 		}
 		
-		fun peekToken(): Token {
+		inline fun peekToken(): Token {
 			return tokens[cur]
 		}
 		
-		fun nextToken(): Token {
+		inline fun nextToken(): Token {
 			return tokens[cur++]
 		}
 		
-		fun isEmpty(): Boolean {
+		inline fun isEmpty(): Boolean {
 			return cur == tokens.size
 		}
 		
-		fun next() {
+		inline fun next() {
 			cur++
 		}
 		
-		fun tipLang(lang: String) {
-			println(lang)
+		inline fun tipLang(lang: String) {
+			println("使用文法：$lang")
 		}
 		
-		fun tipLang(lang: Array<String>, index: Int) {
-			println("${lang[0]}${lang[index]}")
+		inline fun tipLang(lang: Array<String>, index: Int) {
+			println("选用候选式：${lang[0]}${lang[index]}")
 		}
 	}
 }
