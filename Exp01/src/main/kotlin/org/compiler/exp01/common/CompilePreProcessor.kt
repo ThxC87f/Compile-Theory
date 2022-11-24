@@ -35,6 +35,9 @@ open class CompilePreProcessor {
 				}
 				// 可能是注释
 				'/' -> {
+					checkBound(text, cur + 1) {
+						"非法注释"
+					}
 					val nextChar = text[cur + 1]
 					if (nextChar != '/' && nextChar != '*') {
 						list.addLast(it)
@@ -139,9 +142,9 @@ open class CompilePreProcessor {
 			}
 		}
 	}
-	
-	
-	private fun checkBound(text: String, index: Int, errorMsg: () -> String) {
+
+
+	private inline fun checkBound(text: String, index: Int, errorMsg: () -> String) {
 		if (index >= text.length) {
 			throw CompileException(errorMsg())
 		}
