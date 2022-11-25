@@ -52,6 +52,6 @@ interface PredictiveAnalysisParser {
 		return grammar
 	}
 
-	fun isLL1Grammar(text: String, grammar: Grammar): Boolean
+	fun isLL1Grammar(source: String, grammar: Grammar): Boolean
 
 }

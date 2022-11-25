@@ -29,13 +29,13 @@ class Exp3Tests {
 
 	@Test
 	fun test_cfg_1() {
-		val testCases = arrayOf("a", "(a)", "(a,a)", "(a,a,a)")
+		val testCases = arrayOf("$", "($)", "$*$", "$/$")
 
 		testCases.forEach {
 			assertTrue(useCfg(1, it))
 		}
 
-		assertFalse(useCfg(1, "(a,a,)"))
+		assertFalse(useCfg(1, "($/)"))
 	}
 
 	private fun useCfg(i: Int, text: String): Boolean {
@@ -49,20 +49,47 @@ class Exp3Tests {
 	init {
 		@Suppress("NonAsciiCharacters", "LocalVariableName")
 		val ε = PredictiveAnalysisParser.NONE
-		val err = null
+		val eil = null
 		/**
 		 * ---grammar---
+		 * S -> TK
+		 * K -> +TK | -TK | ε
+		 * T -> FV
+		 * V -> *FV | /FV | ε
+		 * F -> (S) | $
 		 *
 		 * ---first---
+		 * S: (, $
+		 * K: +, -, ε
+		 * T: (, $
+		 * V: *, /, ε
+		 * F: (, $
 		 *
 		 * ---follow---
+		 * S: ), #
+		 * K: ), #
+		 * T: +, -, ), #
+		 * V: +, -, ), #
+		 * F: +, -, *, /, ), #
 		 *
 		 * ---index---
-		 * +	-	*	/	(	)	$
-		 * 0 	1	2	3	4	5	6
+		 * +	-	*	/	(	)	$	#
+		 * 0 	1	2	3	4	5	6	7
 		 */
-		cfgTableIndex[1] = mapOf()
-		cfgTableMapping[1] = mapOf()
+		cfgTableIndex[1] = mapOf('+' to 0,
+								 '-' to 1,
+								 '*' to 2,
+								 '/' to 3,
+								 '(' to 4,
+								 ')' to 5,
+								 '$' to 6,
+								 '#' to 7)
+		cfgTableMapping[1] = mapOf('S' to listOf(eil, eil, eil, eil, "TK", eil, "TK", ε),
+								   'K' to listOf("+TK", "-TK", eil, eil, eil, ε, eil, ε),
+								   'T' to listOf(eil, eil, eil, eil, "FV", eil, "FV", ε),
+								   'V' to listOf(ε, ε, "*FV", "/FV", eil, ε, eil, ε),
+								   'F' to listOf(eil, eil, eil, eil, "(S)", eil, "$", ε)
+								  )
 
 		/**
 		 * ---grammar---
@@ -76,7 +103,7 @@ class Exp3Tests {
 		 * T:	',', ε
 		 *
 		 * ---follow---
-		 * S:	',', #
+		 * S:	), ',', #
 		 * L:	)
 		 * T:	)
 		 *
@@ -90,17 +117,10 @@ class Exp3Tests {
 								 ',' to 3,
 								 '#' to 4)
 
-		cfgTableMapping[2] = mapOf('S' to listOf("(L)", err, "a", err, err),
-								   'L' to listOf("ST", err, "ST", err, err),
-								   'T' to listOf(err, ε, err, ",ST", err))
+		cfgTableMapping[2] = mapOf('S' to listOf("(L)", eil, "a", eil, eil),
+								   'L' to listOf("ST", eil, "ST", eil, eil),
+								   'T' to listOf(eil, ε, eil, ",ST", eil))
 		/**
-		 *
-		 * cfg3不是ll1文法
-		 * 原因：对于，A -> Da | ε，需要满足 First(Da) 与 Follow(A) 不相交。
-		 * First(Da) = {b,a}
-		 * Follow(A) = {b,a,c,#}
-		 * 寄！！！！！！！！！！！！！
-		 *
 		 * ---grammar---
 		 * S -> AB
 		 * A -> Da | ε
@@ -117,26 +137,26 @@ class Exp3Tests {
 		 *
 		 * ---follow---
 		 * S: #
-		 * A: c,b,a,#
+		 * A: a, b, c, #
 		 * B: #
-		 * C: c,b,a,#
-		 * D: a
+		 * C: #,
+		 * D: a, #
 		 *
 		 * ---index---
 		 * 	a	b	c	#
 		 * 	0	1	2	3
 		 */
-		/*cfgTableIndex[3] = mapOf('a' to 0,
-									 'b' to 1,
-									 'c' to 2,
-									 '#' to 3)
+		/* cfgTableIndex[3] = mapOf('a' to 0,
+								 'b' to 1,
+								 'c' to 2,
+								 '#' to 3)
 
-			cfgTableMapping[3] = mapOf('S' to listOf("AB", "AB", "AB", err),
-									   'A' to listOf("Da", "Da", ε, ε),
-									   'B' to listOf(err, err, "cC", err),
-									   'C' to listOf("aADC", ε, ε, ε),
-									   'D' to listOf(ε, "b", ε, ε)
-									  ) */
+		cfgTableMapping[3] = mapOf('S' to listOf("AB", "AB", "AB", eil),
+								   'A' to listOf("Da", "Da", ε, ε),
+								   'B' to listOf(eil, eil, "cC", eil),
+								   'C' to listOf("aADC", eil, eil, ε),
+								   'D' to listOf(ε, "b", ε, ε)
+								  ) */
 	}
 
 	fun <K, V> HashMap<K, V>.of(key: K): V {

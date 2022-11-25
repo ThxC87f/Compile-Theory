@@ -11,9 +11,8 @@ class Exp3AnalysisParser : PredictiveAnalysisParser {
 		var firstRun = true
 	}
 
-	@Suppress("NAME_SHADOWING")
-	override fun isLL1Grammar(text: String, grammar: Grammar): Boolean {
-		val text = "$text#"
+	override fun isLL1Grammar(source: String, grammar: Grammar): Boolean {
+		val text = "$source#"
 		// pointer of text
 		var cur = 0
 		val stack = ArrayDeque<Char>()
@@ -30,7 +29,7 @@ class Exp3AnalysisParser : PredictiveAnalysisParser {
 			// 分析栈已空，分析结束
 			if (noTerChar == '#' && terChar == '#') {
 				tipAnalysisProcedure(stack.reversed(), text.substring(cur), "分析结束")
-				return printMsgAndReturnTrue { "句子 \"${text.dropLast(1)}\" 分析成功" }
+				return printMsgAndReturnTrue { "句子 \"${source}\" 分析成功" }
 			}
 
 			// 都是终结符
@@ -43,7 +42,13 @@ class Exp3AnalysisParser : PredictiveAnalysisParser {
 
 			// grammarIt 是非终结符，去表中查询
 			val tableResult = grammar.ofMapping(noTerChar, terChar)
-				?: return printMsgAndReturnFalse { "句子 \"$text\" 分析失败，无法匹配非终结符 '$noTerChar' 与终结符 '$terChar' ！" }
+			if (tableResult == null) {
+				tipAnalysisProcedure(stack.reversed(), text.substring(cur), "$noTerChar !-> $terChar")
+				return printMsgAndReturnFalse {
+					"句子 \"$source\" 分析失败，无法匹配非终结符 '$noTerChar' 与终结符 '$terChar'。" +
+							"$noTerChar 的预测分析表：${grammar.ll1Table[noTerChar]}"
+				}
+			}
 
 			tipAnalysisProcedure(stack.reversed(),
 								 text.substring(cur),
