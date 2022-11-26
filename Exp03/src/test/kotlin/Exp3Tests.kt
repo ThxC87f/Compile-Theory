@@ -29,7 +29,7 @@ class Exp3Tests {
 
 	@Test
 	fun test_cfg_1() {
-		val testCases = arrayOf("$", "($)", "$*$", "$/$")
+		val testCases = arrayOf("$", "($)", "$*$", "$/$", "($+($*$)/($-$)*($)+$-$/$)")
 
 		testCases.forEach {
 			assertTrue(useCfg(1, it))

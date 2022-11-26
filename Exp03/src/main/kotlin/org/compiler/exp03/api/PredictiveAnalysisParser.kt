@@ -52,6 +52,12 @@ interface PredictiveAnalysisParser {
 		return grammar
 	}
 
+	/**
+	 * 给定文本与文法，判断此文本是否满足指定的文法
+	 * @param source 文本
+	 * @param grammar 文法
+	 * @return 如果文本满足文法，返回 true, 反之返回 false
+	 */
 	fun isLL1Grammar(source: String, grammar: Grammar): Boolean
 
 }
