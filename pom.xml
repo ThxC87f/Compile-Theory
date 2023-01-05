@@ -13,6 +13,7 @@
         <module>Exp02</module>
         <module>Exp03</module>
         <module>Exp04</module>
+        <module>CourseDesign</module>
     </modules>
 
     <packaging>pom</packaging>

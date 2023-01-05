@@ -25,7 +25,7 @@ class SemanticTranslator {
 
 	@Suppress(
 		"FunctionName",
-		"NOTHING_TO_/**/",
+		"NOTHING_TO_inline",
 		"MemberVisibilityCanBePrivate",
 		"LocalVariableName",
 		"UnnecessaryVariable",
@@ -38,10 +38,10 @@ class SemanticTranslator {
 		 * E->T  {R.i=T.val}
 		 * R  {E.val=R.s}
 		 */
-		fun E(): Double {
-			val T_val: Double = T()
+		fun E(): Number {
+			val T_val: Number = T()
 			val (R_i, R_s) = R(R_i = T_val)
-			val E_val: Double = R_s
+			val E_val: Number = R_s
 			return E_val
 		}
 
@@ -57,7 +57,7 @@ class SemanticTranslator {
 		 * ε    {R.s=R.i}
 		 *
 		 */
-		fun R(R_i: Double): Pair<Double, Double> {
+		fun R(R_i: Number): Pair<Number, Number> {
 			if (isEmpty()) {
 				return Pair(R_i, R_i)
 			}
@@ -90,8 +90,8 @@ class SemanticTranslator {
 		 * Q    {T.val=Q.s}
 		 *
 		 */
-		fun T(): Double {
-			val F_val: Double = F()
+		fun T(): Number {
+			val F_val: Number = F()
 			val (Q_i, Q_s) = Q(Q_i = F_val)
 			val T_val = Q_s
 			return T_val
@@ -109,7 +109,7 @@ class SemanticTranslator {
 		 * ε       {Q.s=Q.i}
 		 *
 		 */
-		fun Q(Q_i: Double): Pair<Double, Double> {
+		fun Q(Q_i: Number): Pair<Number, Number> {
 			if (isEmpty()) {
 				return Pair(Q_i, Q_i)
 			}
@@ -142,8 +142,8 @@ class SemanticTranslator {
 		 * |
 		 *  Num      {F.val = num.lex_val}
 		 */
-		fun F(): Double {
-			val F_val: Double
+		fun F(): Number {
+			val F_val: Number
 			when (val it = nextToken()) {
 				TOKEN_L_PAR -> {
 					val E_val = E()
@@ -154,7 +154,7 @@ class SemanticTranslator {
 				}
 
 				TOKEN_DIGIT -> {
-					F_val = it.value.toDouble()
+					F_val = it.value.toNumber()
 				}
 
 				else -> {
@@ -169,23 +169,23 @@ class SemanticTranslator {
 			return F_val
 		}
 
-		/**/ fun peekToken(): Token {
+		inline fun peekToken(): Token {
 			return tokens[cur]
 		}
 
-		/**/ fun nextToken(): Token {
+		inline fun nextToken(): Token {
 			return tokens[cur++]
 		}
 
-		/**/ fun isEmpty(): Boolean {
+		inline fun isEmpty(): Boolean {
 			return cur == tokens.size
 		}
 
-		/**/ fun next() {
+		inline fun next() {
 			cur++
 		}
 
-		fun getValue(): Double {
+		fun getValue(): Number {
 			return E()
 		}
 

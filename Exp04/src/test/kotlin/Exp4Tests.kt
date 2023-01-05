@@ -19,7 +19,7 @@ class Exp4Tests {
 			val tokens = exp1Tokenizer.parseToken(code)
 			val result = translator.translateStatement(tokens)
 			println(result)
-			assertEquals(ans.toDouble(), result.toDouble())
+			assertEquals(ans, result)
 		}
 
 	}
